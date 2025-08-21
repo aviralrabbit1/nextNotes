@@ -228,6 +228,36 @@ py manage.py migrate
 - Run `python manage.py migrate` to apply those changes to the database.
 
 </details>
+</details>
+
+### 3. Checking admin
+
+<details>
+<summary> 
+Admin User
+</summary>
+
+- Creating a `admin user` with a username,  prompt for an email address and a password, referenced from [Creating an admin user](https://docs.djangoproject.com/en/5.2/intro/tutorial02/#creating-an-admin-user)
+```sh
+py manage.py createsuperuser
+```
+</details>
+
+<details>
+<summary>
+Make the app modifiable from admin
+</summary>
+
+- In admin panel, The editable content: `groups and users` are provided by `django.contrib.auth`. 
+- To tell the admin that `Notes` has an admin interface, modify the `notes/admin.py` file,
+
+```py
+from django.contrib import admin
+from .models import User, Notes
+
+admin.site.register(User)
+admin.site.register(Notes)
+```
 
 </details>
 </details>
