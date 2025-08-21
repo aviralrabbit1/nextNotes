@@ -10,9 +10,17 @@ class User(models.Model):
     last_update = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+      return self.user_name
+
 
 class Notes(models.Model):
-    user_email = models.CharField(max_length=200)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
-    votes = models.IntegerField(default=0)
+    note_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    note_title = models.CharField(max_length=255)
+    note_content = models.TextField()
+    last_update = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    
+    def __str__(self):
+      return self.note_title  

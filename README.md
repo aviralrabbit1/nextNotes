@@ -119,7 +119,19 @@ class User(models.Model):
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_name = models.CharField(max_length=255)
     # other fields
+
+    def __str__(self):
+      return self.user_name
 ```
+
+```py
+    def __str__(self):
+      return self.user_name
+```
+- Defines how Python (and Django) will represent the object as a string
+- print the object or see it in the Django admin, shell, or queryset results, it shows the note’s title: `note_title` instead of `Note object`
+- Always implement `__str__` on the models so Django admin, logs, and debugging are easier. Typically, returns a field that uniquely identifies the object (like username for User, title for Note).
+</details>
 
 <details>
 <summary>
@@ -144,7 +156,78 @@ PostgreSQL / MySQL / SQLite (common Django backends):
 - Portability: Some older DBs (or MySQL with certain encodings) had indexing restrictions like "can only index first 191 chars in UTF8". Smaller lengths avoid those issues.
 </details>
 
-</details>
+<details>
+<summary>
+Activating Models
+</summary>
+
+To include the app in our project, add a reference to its configuration class in the `INSTALLED_APPS` setting. The NotesConfig class is in the polls/apps.py file, so its dotted path is 'notes.apps.NotesConfig'. Edit the `backend/settings.py` file and the path to the `INSTALLED_APPS` setting.
+
+```py
+# backend/settings.py
+
+INSTALLED_APPS = [
+    # others
+    'notes.apps.NotesConfig',
+]
+```
+
+Now Django knows to include the `notes` app. Now run:
+
+```sh
+py manage.py makemigrations notes
+```
+
+By running `makemigrations`, Django knows that we’ve made some changes to your models/database schema(or created a new one).
+
+returns
+```sh
+Migrations for 'notes':
+  notes\migrations\0001_initial.py
+    + Create model Notes
+    + Create model User
+```
+`sqlmigrate` command takes migration names and returns their SQL:
+```sh
+py manage.py sqlmigrate notes 0001
+```
+
+Gives:
+```sql
+BEGIN;
+--
+-- Create model Notes
+--
+CREATE TABLE "notes_notes" ("note_id" char(32) NOT NULL PRIMARY KEY, "note_title" varchar(255) NOT NULL, "note_content" text NOT NULL, "last_update" datetime NOT NULL, "created_on" datetime NOT NULL);
+--
+-- Create model User
+--
+CREATE TABLE "notes_user" ("user_id" char(32) NOT NULL PRIMARY KEY, "user_name" varchar(255) NOT NULL, "user_email" varchar(254) NOT NULL UNIQUE, "password" varchar(255) NOT NULL, "last_update" datetime NOT NULL, "created_on" datetime NOT NULL);
+COMMIT;
+```
+
 </details>
 
+<details>
+<summary>
+Migrations
+</summary>
+
+- To checks for any problems in the project without making migrations or touching the database.
+, run 
+```sh
+py manage.py check
+```
+
+- To take all the migrations that haven’t been applied (tracked using database called django_migrations) and run them against the database - synchronizing the changes made to the models with the schema in the database, run migrate again to create those model tables in the database:
+```sh
+py manage.py migrate
+```
+
+- Run `python manage.py makemigrations` to create migrations for those changes
+- Run `python manage.py migrate` to apply those changes to the database.
+
+</details>
+
+</details>
 </details>
