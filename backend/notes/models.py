@@ -1,5 +1,8 @@
 from django.db import models
 import uuid
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 # Create your models here.
 class User(models.Model):
@@ -9,7 +12,6 @@ class User(models.Model):
     password = models.CharField(max_length=255)  # store hashed password
     last_update = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
       return self.user_name
 
@@ -20,6 +22,7 @@ class Note(models.Model):
     note_content = models.TextField()
     last_update = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes')
     
     def __str__(self):
       return self.note_title  

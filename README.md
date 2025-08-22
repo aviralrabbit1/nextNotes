@@ -493,6 +493,18 @@ class CustomUser(AbstractUser):
         return self.email
 ```
 
+- (If we don't have User schema) Update `notes/models.py` (Add User Relationship)
+
+```py
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class Note(models.Model):
+    note_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes')
+```
+
 </details>
 
 <details>
@@ -515,6 +527,135 @@ class UserSerializer(serializers.ModelSerializer):
 
 </details>
 
+<details>
+<summary>
+Views
+</summary>
+
+- Create `accounts/views.py`
+
+```py
+from rest_framework import status, generics
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth import authenticate
+from .models import CustomUser
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
+
+class RegisterView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = UserRegistrationSerializer
+
+    def create(self, request, *args, **kwargs):
+
+class LoginView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserLoginSerializer
+    def post(self, request, *args, **kwargs):
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_view(request):
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profile_view(request):
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_profile_view(request):
+```
+
+- Update `notes/views.py` with
+
+```py
+from rest_framework.permissions import IsAuthenticated
+
+class NoteListCreateView(generics.ListCreateAPIView):
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated]
+```
+
 </details>
+
+<details>
+<summary>
+URLs
+</summary>
+
+- Create `accounts/urls.py`
+
+```py
+from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import RegisterView, LoginView, logout_view, profile_view, update_profile_view
+
+urlpatterns = [
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('profile/', profile_view, name='profile'),
+    path('profile/update/', update_profile_view, name='update_profile'),
+]
+```
+
+- Update `backend/urls.py`
+
+```py
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/auth/', include('accounts.urls')),
+    path('api/', include('notes.urls')),  
+    # Other notes URLs
+]
+```
+
+</details>
+
+<details>
+<summary>
+Migrations
+</summary>
+
+```sh
+# Delete existing migrations and database for starting fresh
+rm -rf accounts/migrations
+rm -rf notes/migrations
+rm db.sqlite3
+
+# Create new migrations
+python manage.py makemigrations accounts
+python manage.py makemigrations notes
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
+```
+
+Features Implemented:
+
+- JWT Authentication with access and refresh tokens
+- User Registration with email and password validation
+- User Login/Logout with token management
+- Protected API endpoints requiring authentication
+- User-specific notes (users can only see their own notes)
+- Token refresh functionality
+- CORS configuration for frontend integration
+- Custom User model with email as username
+- Profile management endpoints
+
+</details>
+
+
+</details>
+
 
 </details>
