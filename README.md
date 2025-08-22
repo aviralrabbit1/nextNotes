@@ -272,7 +272,7 @@ admin.site.register(Notes)
 Install Django rest framework and build out our api with
 
 ```sh
-pip install djangorestframework
+pip install djangorestframework django-cors-headers
 ```
 
 <details>
@@ -313,6 +313,71 @@ note_title   : FIrst Note
 note_content : Some Content
 last_update  : 2025-08-21T19:44:38.822578Z
 created_on   : 2025-08-21T19:44:38.822578Z
+```
+
+</details>
+</details>
+
+<details>
+<summary>
+Frontend Nextjs
+</summary>
+
+```sh
+bunx create-next-app@latest
+
+√ What is your project named? ... frontend
+√ Would you like to use TypeScript? ... No / Yes
+√ Which linter would you like to use? » ESLint
+√ Would you like to use Tailwind CSS? ... No / Yes
+√ Would you like your code inside a `src/` directory? ... No / Yes
+√ Would you like to use App Router? (recommended) ... No / Yes
+√ Would you like to use Turbopack? (recommended) ... No / Yes
+√ Would you like to customize the import alias (`@/*` by default)? ... No / Yes
+Creating a new Next.js app in D:\Projects\nextNotes\frontend.
+```
+
+Install dependencies as per required:
+```sh
+bun add axios @reduxjs/toolkit react-redux
+```
+
+<details>
+<summary>
+API functionalities
+</summary>
+
+Create `frontend/lib/api.js`, provide backend URL, add CRUD functionality
+- getAllNotes
+- getNote
+- createNote
+- updateNote
+- deleteNote
+</details>
+
+<details>
+<summary>
+Redux store
+</summary>
+
+Create `store/notesSlice.js`, with 
+
+```js
+const initialState = {
+  selectedNote: null,
+  isEditing: false,
+  formData: {
+    note_title: '',
+    note_content: '',
+  },
+}
+const notesSlice = createSlice({
+    name: 'notes',
+    initialState,
+    reducers: {
+    ...
+    } 
+})
 ```
 
 </details>
