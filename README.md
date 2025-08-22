@@ -381,5 +381,281 @@ const notesSlice = createSlice({
 ```
 
 </details>
+</details>
+
+### Authentication
+
+<details>
+<summary>
+Backend
+</summary>
+
+<details>
+<summary>
+Install Required Package
+</summary>
+
+- reference [django-rest-framework-simplejwt](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html)
+
+```sh
+pip install djangorestframework-simplejwt
+```
+</details>
+
+<details>
+<summary>
+Configure backend
+</summary>
+
+- Modify `backend/settings.py`. To store the `secret` securely,
+```sh
+pip install python-decouple
+```
+
+```py
+from decouple import config
+from datetime import timedelta
+
+SECRET_KEY = config("JWT_SECRET")  # Django secret key taken from `.env` file
+CORS_ALLOW_CREDENTIALS = True
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+```
+</details>
+
+<details>
+<summary>
+Accounts app
+</summary>
+
+- Created with
+```sh
+py manage.py startapp accounts
+```
+
+<details>
+<summary>
+Accounts Models
+</summary>
+
+- Modify `accounts/models.py`
+
+```py
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
+    def __str__(self):
+        return self.email
+```
+
+- (If we don't have User schema) Update `notes/models.py` (Add User Relationship)
+
+```py
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class Note(models.Model):
+    note_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes')
+```
+
+</details>
+
+<details>
+<summary>
+Serializers
+</summary>
+
+- Create `accounts/serializers.py`
+
+```py
+from rest_framework import serializers
+from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from .models import CustomUser
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+class UserLoginSerializer(serializers.Serializer):
+class UserSerializer(serializers.ModelSerializer):
+```
+
+</details>
+
+<details>
+<summary>
+Views
+</summary>
+
+- Create `accounts/views.py`
+
+```py
+from rest_framework import status, generics
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth import authenticate
+from .models import CustomUser
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
+
+class RegisterView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = UserRegistrationSerializer
+
+    def create(self, request, *args, **kwargs):
+
+class LoginView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UserLoginSerializer
+    def post(self, request, *args, **kwargs):
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_view(request):
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profile_view(request):
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_profile_view(request):
+```
+
+- Update `notes/views.py` with
+
+```py
+from rest_framework.permissions import IsAuthenticated
+
+class NoteListCreateView(generics.ListCreateAPIView):
+    serializer_class = NoteSerializer
+    permission_classes = [IsAuthenticated]
+```
+
+</details>
+
+<details>
+<summary>
+URLs
+</summary>
+
+- Create `accounts/urls.py`
+
+```py
+from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import RegisterView, LoginView, logout_view, profile_view, update_profile_view
+
+urlpatterns = [
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('profile/', profile_view, name='profile'),
+    path('profile/update/', update_profile_view, name='update_profile'),
+]
+```
+
+- Update `backend/urls.py`
+
+```py
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/auth/', include('accounts.urls')),
+    path('api/', include('notes.urls')),  
+    # Other notes URLs
+]
+```
+
+</details>
+
+<details>
+<summary>
+Migrations
+</summary>
+
+```sh
+# Delete existing migrations and database for starting fresh
+rm -rf accounts/migrations
+rm -rf notes/migrations
+rm db.sqlite3
+
+# Create new migrations
+python manage.py makemigrations accounts
+python manage.py makemigrations notes
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
+```
+
+Features Implemented:
+
+- JWT Authentication with access and refresh tokens
+- User Registration with email and password validation
+- User Login/Logout with token management
+- Protected API endpoints requiring authentication
+- User-specific notes (users can only see their own notes)
+- Token refresh functionality
+- CORS configuration for frontend integration
+- Custom User model with email as username
+- Profile management endpoints
+
+</details>
+
+
+</details>
+
 
 </details>
