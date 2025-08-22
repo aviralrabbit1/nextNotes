@@ -260,4 +260,45 @@ admin.site.register(Notes)
 ```
 
 </details>
+
+### 4. Creating APIs
+Install Django rest framework and build out our api with
+
+```sh
+pip install djangorestframework
+```
+
+<details>
+<summary>
+Serializer
+</summary>
+
+- Creating a serializer for the model,which will handle converting the model instance to and from JSON. 
+- Create `notes/serializers.py` file
+
+```py
+from rest_framework import serializers
+from .models import Notes
+
+class NotesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notes
+        fields = '__all__'
+```
+
+</details>
+
+<details>
+<summary>
+CRUD functionality with APIs
+</summary>
+
+Use `notes/views.py` and create `notes/utils.py` (utility functions, separated into modules to keep the code organized and reusable)
+
+```py
+26a539e1-ee17-40fb-a7b7-8569010998bc
+```
+
+</details>
+
 </details>
