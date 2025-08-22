@@ -15,6 +15,13 @@ Based on [First django app](https://docs.djangoproject.com/en/5.2/intro/tutorial
 ```sh
 mkdir nextnotes
 cd nextnotes
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate
+
+# Install Django and dependencies
+pip install django djangorestframework django-cors-headers
+
 django-admin startproject backend
 cd backend
 py manage.py startapp notes
@@ -260,4 +267,54 @@ admin.site.register(Notes)
 ```
 
 </details>
+
+### 4. Creating APIs
+Install Django rest framework and build out our api with
+
+```sh
+pip install djangorestframework
+```
+
+<details>
+<summary>
+Serializer
+</summary>
+
+- Creating a serializer for the model,which will handle converting the model instance to and from JSON. 
+- Create `notes/serializers.py` file
+
+```py
+from rest_framework import serializers
+from .models import Notes
+
+class NoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notes
+        fields = '__all__'
+```
+
+</details>
+
+<details>
+<summary>
+CRUD functionality with APIs
+</summary>
+
+Use `notes/views.py` and create `notes/utils.py` (utility functions, separated into modules to keep the code organized and reusable), Added mock data through `admin` panel to test.
+`note_id = 26a539e1-ee17-40fb-a7b7-8569010998bc`
+
+Was stuck here why my api wasn't being read, so took help of ai to understand how to do requests similar to curl in windows.
+
+```sh
+Invoke-RestMethod -Uri "http://localhost:8000/api/notes/" -Method GET
+
+note_id      : 26a539e1-ee17-40fb-a7b7-8569010998bc
+note_title   : FIrst Note
+note_content : Some Content
+last_update  : 2025-08-21T19:44:38.822578Z
+created_on   : 2025-08-21T19:44:38.822578Z
+```
+
+</details>
+
 </details>
