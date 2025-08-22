@@ -339,6 +339,47 @@ Creating a new Next.js app in D:\Projects\nextNotes\frontend.
 
 Install dependencies as per required:
 ```sh
-bun add axios @reduxjs/toolkit react-redux @tanstack/react-query
+bun add axios @reduxjs/toolkit react-redux
 ```
+
+<details>
+<summary>
+API functionalities
+</summary>
+
+Create `frontend/lib/api.js`, provide backend URL, add CRUD functionality
+- getAllNotes
+- getNote
+- createNote
+- updateNote
+- deleteNote
+</details>
+
+<details>
+<summary>
+Redux store
+</summary>
+
+Create `store/notesSlice.js`, with 
+
+```js
+const initialState = {
+  selectedNote: null,
+  isEditing: false,
+  formData: {
+    note_title: '',
+    note_content: '',
+  },
+}
+const notesSlice = createSlice({
+    name: 'notes',
+    initialState,
+    reducers: {
+    ...
+    } 
+})
+```
+
+</details>
+
 </details>

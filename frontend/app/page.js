@@ -1,103 +1,124 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchNotes, deleteNote, openModal, closeModal, updateFormData, createNote, updateNote } from '../store/notesSlice'
+
+export default function HomePage() {
+  const dispatch = useDispatch()
+  const { notes, loading, showModal, editingNote, formData } = useSelector(state => state.notes)
+
+  useEffect(() => {
+    dispatch(fetchNotes())
+  }, [dispatch])
+
+  const handleDeleteNote = (e, noteId) => {
+    e.stopPropagation()
+    dispatch(deleteNote(noteId))
+  }
+
+  const handleEditNote = (note) => {
+    dispatch(openModal(note))
+  }
+
+  const handleCreateNew = () => {
+    dispatch(openModal())
+  }
+
+  const handleSaveNote = () => {
+    if (!formData.note_title.trim()) return
+
+    if (editingNote) {
+      dispatch(updateNote({ 
+        noteId: editingNote.note_id, 
+        noteData: formData 
+      }))
+    } else {
+      dispatch(createNote(formData))
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="greeting">Loading...</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="max-w-6xl mx-auto px-6">
+      <div className="greeting">Good Morning Deva!</div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {notes.map((note) => (
+          <div 
+            key={note.note_id} 
+            className="note-card"
+            onClick={() => handleEditNote(note)}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <button 
+              className="delete-btn"
+              onClick={(e) => handleDeleteNote(e, note.note_id)}
+            >
+              ×
+            </button>
+            <div className="note-title">{note.note_title}</div>
+            <div className="note-content">{note.note_content}</div>
+            <div className="note-date">
+              {new Date(note.last_update).toLocaleDateString()}
+            </div>
+          </div>
+        ))}
+        
+        <div 
+          className="note-card border-dashed border-2 flex items-center justify-center cursor-pointer min-h-32"
+          onClick={handleCreateNew}
+        >
+          <span className="text-4xl text-gray-400">+</span>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => dispatch(closeModal())}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <div className="modal-title">
+                {editingNote ? 'Edit Note' : 'Create Note'}
+              </div>
+              <button 
+                onClick={() => dispatch(closeModal())}
+                className="text-gray-500 hover:text-gray-700 text-xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <input
+              className="modal-input"
+              placeholder="Note title"
+              value={formData.note_title}
+              onChange={(e) => dispatch(updateFormData({ note_title: e.target.value }))}
+            />
+            
+            <textarea
+              className="modal-textarea"
+              placeholder="Write your note here..."
+              value={formData.note_content}
+              onChange={(e) => dispatch(updateFormData({ note_content: e.target.value }))}
+            />
+            
+            <div className="flex justify-end">
+              <button className="btn-primary" onClick={handleSaveNote}>
+                Save
+              </button>
+              <button className="btn-secondary" onClick={() => dispatch(closeModal())}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  );
+  )
 }
