@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from rest_framework.response import Response
-from .models import Notes
-from .serializers import NotesSerializer
+from .models import Note
+from .serializers import NoteSerializer
 from rest_framework.decorators import api_view
 
 # Create your views here.
@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 @api_view(["GET"])
 def getNotesList(request):
     notes = Notes.objects.all().order_by('-last_update')
-    serializer = NotesSerializer(notes, many=True)
+    serializer = NoteSerializer(notes, many=True)
     return Response(serializer.data)
 
 
@@ -19,7 +19,7 @@ def getNotesList(request):
 @api_view(["GET"])
 def getNoteDetail(request, pk):
     notes = Notes.objects.get(id=pk)
-    serializer = NotesSerializer(notes, many=False)
+    serializer = NoteSerializer(notes, many=False)
     return Response(serializer.data)
 
 # This function will create a note
@@ -30,7 +30,7 @@ def createNote(request):
       note_title=data['note_title'],
       note_content=data['note_content'],
     )
-    serializer = NotesSerializer(note, many=False)
+    serializer = NoteSerializer(note, many=False)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
@@ -41,7 +41,7 @@ def createNote(request):
 def updateNote(request, pk):
     data = request.data
     note = Note.objects.get(note_id=pk)
-    serializer = NotesSerializer(instance=note, data=data)
+    serializer = NoteSerializer(instance=note, data=data)
 
     if serializer.is_valid():
         serializer.save()

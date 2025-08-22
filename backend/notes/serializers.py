@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Notes 
+from .models import User, Note
 
 # Convert to and from Json
 class UsersSerializer(serializers.ModelSerializer):
@@ -7,7 +7,8 @@ class UsersSerializer(serializers.ModelSerializer):
         model = User
         fields = "__all__"
 
-class NotesSerializer(serializers.ModelSerializer):
+class NoteSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Notes
-        fields = '__all__'
+        model = Note
+        fields = ['note_id', 'note_title', 'note_content', 'last_update', 'created_on'] 
+        read_only_fields = ['note_id', 'last_update', 'created_on']
