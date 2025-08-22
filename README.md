@@ -396,6 +396,8 @@ Install Required Package
 </summary>
 </details>
 
+- reference [django-rest-framework-simplejwt](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html)
+
 ```sh
 pip install djangorestframework-simplejwt
 ```

@@ -19,12 +19,17 @@ from django.urls import include, path
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
+    TokenVerifyView # verifies if a token is valid or not
 )
 
 urlpatterns = [    
     path("api/", include("notes.urls")),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+
+    # allow API users to verify HMAC-signed tokens without having access to the signing key
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+
     # path("notes/", include("notes.urls")),
     path("admin/", admin.site.urls),
 ]
