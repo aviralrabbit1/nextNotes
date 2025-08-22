@@ -394,13 +394,13 @@ Backend
 <summary>
 Install Required Package
 </summary>
-</details>
 
 - reference [django-rest-framework-simplejwt](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html)
 
 ```sh
 pip install djangorestframework-simplejwt
 ```
+</details>
 
 <details>
 <summary>
@@ -456,12 +456,65 @@ REST_FRAMEWORK = {
     ),
 }
 ```
+</details>
+
+<details>
+<summary>
+Accounts app
+</summary>
+
+- Created with
+```sh
+py manage.py startapp accounts
+```
+
+<details>
+<summary>
+Accounts Models
+</summary>
+
+- Modify `accounts/models.py`
+
+```py
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class CustomUser(AbstractUser):
+    email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
+    def __str__(self):
+        return self.email
+```
 
 </details>
 
+<details>
+<summary>
+Serializers
+</summary>
 
+- Create `accounts/serializers.py`
 
+```py
+from rest_framework import serializers
+from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from .models import CustomUser
 
+class UserRegistrationSerializer(serializers.ModelSerializer):
+class UserLoginSerializer(serializers.Serializer):
+class UserSerializer(serializers.ModelSerializer):
+```
 
+</details>
+
+</details>
 
 </details>
