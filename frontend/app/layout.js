@@ -2,14 +2,14 @@
 
 import './globals.css'
 import { Provider } from 'react-redux'
-import { store } from '../store/index'
+import { store } from './store/index'
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <Provider store={store}>
-          <div className="header">
+        <Provider store={store}>  
+          {/* <div className="header">
             <div className="max-w-6xl mx-auto px-6">
               <div className="flex justify-between items-center">
                 <h1 className="text-xl font-semibold text-gray-800">Keep Notes</h1>
@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
           {children}
         </Provider>
       </body>
