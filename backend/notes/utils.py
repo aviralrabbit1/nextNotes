@@ -18,7 +18,7 @@ def getNotesList(request):
 # This function will return the note detail
 @api_view(["GET"])
 def getNoteDetail(request, pk):
-    notes = Notes.objects.get(id=pk)
+    notes = Notes.objects.get(note_id=pk)
     serializer = NoteSerializer(notes, many=False)
     return Response(serializer.data)
 
