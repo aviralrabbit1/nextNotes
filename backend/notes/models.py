@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 # Create your models here.
 

@@ -11,10 +11,3 @@ urlpatterns = [
     path('notes/', NoteListCreateView.as_view(), name='note-list'),
     path('notes/<uuid:pk>/', NoteDetailView.as_view(), name='note-detail'),
 ]
-
-# urlpatterns = [
-#     # path("", include(router.urls)),
-#     # path("", views.index, name="index"),  
-#     path('notes/', NoteListCreateView.as_view(), name='note-list-create'),
-#     path('notes/<uuid:note_id>/', NoteDetailView.as_view(), name='note-detail'),
-# ]

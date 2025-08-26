@@ -460,49 +460,64 @@ REST_FRAMEWORK = {
 
 <details>
 <summary>
-Accounts app
+Accounts/Users
 </summary>
-
-- Created with
-```sh
-py manage.py startapp accounts
-```
 
 <details>
 <summary>
 Accounts Models
 </summary>
 
-- Modify `accounts/models.py`
+- Modify `notes/models.py`, referenced [django.contrib.auth](https://docs.djangoproject.com/en/5.2/ref/contrib/auth/), [Customizing Authenticataion in Django](https://docs.djangoproject.com/en/5.2/topics/auth/customizing)
 
 ```py
-from django.contrib.auth.models import AbstractUser
-from django.db import models
+import uuid
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
-class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class UserManager(BaseUserManager):
+    def create_user(self, user_email, password=None, **extra_fields):
+        user = self.model(user_email=user_email, **extra_fields)
+        user.save(using=self._db)
+        return user
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    def create_superuser(self, user_email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(user_email, password, **extra_fields)
+    
+    def get_by_natural_key(self, user_email):
+        return self.get(user_email=user_email)
 
+# User Model
+class User(AbstractBaseUser):
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    USERNAME_FIELD = 'user_email'
+    REQUIRED_FIELDS = ['user_name']
+    
+    objects = UserManager()
+    
     def __str__(self):
-        return self.email
+        return self.user_email
+
+class Note(models.Model):
+    note_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notes')
+    
 ```
 
-- (If we don't have User schema) Update `notes/models.py` (Add User Relationship)
+- Update `notes/models.py` (Add User Relationship). 
+- Better to use `settings.AUTH_USER_MODEL` as foreign key in `Notes`, in case the `AUTH_USER_MODEL` changes.
 
 ```py
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from django.conf import settings
 
 class Note(models.Model):
     note_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes')
+
+    def __str__(self):
+      return str(self.note_title)  
 ```
 
 </details>
@@ -512,17 +527,28 @@ class Note(models.Model):
 Serializers
 </summary>
 
-- Create `accounts/serializers.py`
+- Modify `notes/serializers.py`. (Convert to and from Json)
 
 ```py
 from rest_framework import serializers
-from django.contrib.auth import authenticate
-from django.contrib.auth.password_validation import validate_password
-from .models import CustomUser
+from .models import User, Note
+from django.contrib.auth.hashers import make_password
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
-class UserLoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('user_id', 'user_name', 'user_email', 'password', 'last_update', 'created_on')
+        extra_kwargs = {'password': {'write_only': True}}
+    
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+
+class NoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        fields = ('note_id', 'note_title', 'note_content', 'last_update', 'created_on', 'user')
+        read_only_fields = ('user',)
 ```
 
 </details>
@@ -532,42 +558,64 @@ class UserSerializer(serializers.ModelSerializer):
 Views
 </summary>
 
-- Create `accounts/views.py`
+- Modify `notes/views.py`, referenced [Generic Views](https://www.django-rest-framework.org/api-guide/generic-views/)
 
 ```py
-from rest_framework import status, generics
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.shortcuts import render
+from .models import User, Note
+from .serializers import UserSerializer, NoteSerializer
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics, permissions, status
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
-from .models import CustomUser
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
+from rest_framework.views import APIView
 
 class RegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    permission_classes = (AllowAny,)
-    serializer_class = UserRegistrationSerializer
-
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
+    
     def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'user': serializer.data,
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_201_CREATED)
 
-class LoginView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = UserLoginSerializer
-    def post(self, request, *args, **kwargs):
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        user_email = request.data.get('user_email')
+        password = request.data.get('password')
+        user = authenticate(request, username=user_email, password=password)
+        
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            serializer = UserSerializer(user)
+            return Response({
+                'user': serializer.data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout_view(request):
+class NoteListCreateView(generics.ListCreateAPIView):
+    serializer_class = NoteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        return Note.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def profile_view(request):
+class NoteDetailView(generics.RetrieveUpdateDestroyAPIView):
 
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def update_profile_view(request):
 ```
 
 - Update `notes/views.py` with
@@ -587,36 +635,42 @@ class NoteListCreateView(generics.ListCreateAPIView):
 URLs
 </summary>
 
-- Create `accounts/urls.py`
+- Modify `accounts/urls.py`
 
 ```py
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
-from .views import RegisterView, LoginView, logout_view, profile_view, update_profile_view
+from .views import RegisterView, LoginView, NoteListCreateView, NoteDetailView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', LoginView.as_view(), name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('profile/', profile_view, name='profile'),
-    path('profile/update/', update_profile_view, name='update_profile'),
+    path('notes/', NoteListCreateView.as_view(), name='note-list'),
+    path('notes/<uuid:pk>/', NoteDetailView.as_view(), name='note-detail'),
 ]
 ```
 
-- Update `backend/urls.py`
+- Update `backend/urls.py` to include the URLconf defined in `notes.urls`
 
 ```py
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView # verifies if a token is valid or not
+)
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/auth/', include('accounts.urls')),
-    path('api/', include('notes.urls')),  
-    # Other notes URLs
+urlpatterns = [    
+    path("api/", include("notes.urls")),
+    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # allow API users to verify HMAC-signed tokens without having access to the signing key
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path("admin/", admin.site.urls),
 ]
 ```
+
+Now test the api paths in localhost as well as the admin panel, `http://localhost:8000/admin` displays  admin panel.
 
 </details>
 
@@ -627,16 +681,14 @@ Migrations
 
 ```sh
 # Delete existing migrations and database for starting fresh
+# rmdir for windows
 rm -rf accounts/migrations
 rm -rf notes/migrations
 rm db.sqlite3
 
-# Create new migrations
-python manage.py makemigrations accounts
 python manage.py makemigrations notes
 python manage.py migrate
 
-# Create superuser
 python manage.py createsuperuser
 ```
 
@@ -650,12 +702,14 @@ Features Implemented:
 - Token refresh functionality
 - CORS configuration for frontend integration
 - Custom User model with email as username
-- Profile management endpoints
 
 </details>
-
-
 </details>
 
+<details>
+<summary>
+Frontend
+</summary>
 
+</details>
 </details>

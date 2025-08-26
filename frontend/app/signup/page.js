@@ -60,11 +60,12 @@ export default function SignupPage() {
           
           {error && (
             <div className="error-message">
-              {Object.keys(error).map(key => (
+              {/* {Object.keys(error).map(key => (
                 <div key={key}>
                   {Array.isArray(error[key]) ? error[key][0] : error[key]}
                 </div>
-              ))}
+              ))} */}
+              {error}
             </div>
           )}
 
