@@ -6,7 +6,7 @@ from .views import RegisterView, LoginView, NoteListCreateView, NoteDetailView
 # router.register(r'notes', NoteListCreateView)
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
+    path('signup/', RegisterView.as_view(), name='signup'),
     path('login/', LoginView.as_view(), name='login'),
     path('notes/', NoteListCreateView.as_view(), name='note-list'),
     path('notes/<uuid:pk>/', NoteDetailView.as_view(), name='note-detail'),

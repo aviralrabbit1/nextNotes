@@ -44,8 +44,11 @@ class User(AbstractBaseUser):
     
     def __str__(self):
         return self.user_email
+
+    @property
+    def id(self):
+        return self.user_id
     
-    # Add these required methods
     def has_perm(self, perm, obj=None):
         return self.is_superuser
     
