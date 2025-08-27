@@ -29,7 +29,5 @@ urlpatterns = [
 
     # allow API users to verify HMAC-signed tokens without having access to the signing key
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-
-    # path("notes/", include("notes.urls")),
     path("admin/", admin.site.urls),
 ]

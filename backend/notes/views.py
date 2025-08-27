@@ -30,7 +30,7 @@ class LoginView(APIView):
     def post(self, request):
         user_email = request.data.get('user_email')
         password = request.data.get('password')
-        user = authenticate(request, username=user_email, password=password)
+        user = authenticate(request, user_email=user_email, password=password)
         
         if user is not None:
             refresh = RefreshToken.for_user(user)
@@ -40,7 +40,7 @@ class LoginView(APIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             })
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': {'message': 'Invalid credentials'}}, status=status.HTTP_401_UNAUTHORIZED)
 
 class NoteListCreateView(generics.ListCreateAPIView):
     serializer_class = NoteSerializer
