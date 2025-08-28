@@ -1,165 +1,157 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { useDispatch } from 'react-redux'
 import Link from 'next/link'
-import { registerUser, clearError } from '../store/authSlice'
-import { useAuth } from '../hooks/useAuth'
+import { signupUser, clearError } from '../store/slices/authSlice'
 import Header from '../components/Header'
+import Cookies from 'js-cookie'
 
-export default function SignupPage() {
+export default function Signup() {
   const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    first_name: '',
-    last_name: '',
+    user_name: '',
+    user_email: '',
     password: '',
-    password_confirm: '',
+    confirmPassword: '',
   })
-
+  
   const dispatch = useDispatch()
   const router = useRouter()
-  const { isAuthenticated, loading, error } = useAuth()
+  const { isLoading, error } = useSelector((state) => state.auth)
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/')
-    }
-  }, [isAuthenticated, router])
-
-  useEffect(() => {
-    dispatch(clearError())
-  }, [dispatch])
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+  const handleChange = async (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+    if (error) dispatch(clearError())
   }
 
   const handleSubmit = async (e) => {
+    
     e.preventDefault()
-    const result = await dispatch(registerUser(formData))
-    if (result.type === 'auth/register/fulfilled') {
-      router.push('/')
+    
+    if (formData.password !== formData.confirmPassword) {
+      dispatch(clearError())
+      return
+    }
+    
+    const { confirmPassword, ...registerData } = formData
+    const result = await dispatch(signupUser(registerData)).unwrap();
+    console.log("singup from inside handle signup click, password match", result);
+    console.log(typeof result)
+    
+    
+    if (!result.error) {
+      // Store tokens in cookies
+      Cookies.set('access_token', result.access)
+      Cookies.set('refresh_token', result.refresh)
+      router.push('/notes')
     }
   }
 
-  if (isAuthenticated) {
-    return <div className="loading">Redirecting...</div>
-  }
-
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="auth-container">
-        <form onSubmit={handleSubmit} className="auth-form">
-          <h2 className="auth-title">Sign up</h2>
-          
+      
+      <main className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="card">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
+              <span className="text-white font-bold text-2xl">K</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
+            <p className="text-gray-600">Join us to start organizing your notes</p>
+          </div>
+
           {error && (
-            <div className="error-message">
-              {/* {Object.keys(error).map(key => (
-                <div key={key}>
-                  {Array.isArray(error[key]) ? error[key][0] : error[key]}
-                </div>
-              ))} */}
-              {error}
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {typeof error === 'object' ? error.error || 'Registration failed from page.js' : error}
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="username" className="form-label">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
-          </div>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="user_name" className="block text-sm font-medium text-gray-700 mb-2">
+                Username
+              </label>
+              <input
+                type="text"
+                id="user_name"
+                name="user_name"
+                className="input-field"
+                placeholder="Choose a username"
+                value={formData.user_name}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
-          </div>
+            <div>
+              <label htmlFor="user_email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                id="user_email"
+                name="user_email"
+                className="input-field"
+                placeholder="Enter your email"
+                value={formData.user_email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="first_name" className="form-label">First Name</label>
-            <input
-              type="text"
-              id="first_name"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
-          </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="input-field"
+                placeholder="Create a password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="last_name" className="form-label">Last Name</label>
-            <input
-              type="text"
-              id="last_name"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
-          </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                className="input-field"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
-          </div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full btn-primary py-3 disabled:opacity-50"
+            >
+              {isLoading ? 'Creating account...' : 'Sign Up'}
+            </button>
+          </form>
 
-          <div className="form-group">
-            <label htmlFor="password_confirm" className="form-label">Confirm Password</label>
-            <input
-              type="password"
-              id="password_confirm"
-              name="password_confirm"
-              value={formData.password_confirm}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary hover:text-secondary font-medium">
+                Login
+              </Link>
+            </p>
           </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary"
-          >
-            {loading ? 'Creating account...' : 'Register'}
-          </button>
-
-          <div className="auth-link">
-            Already have an account? <Link href="/login">Login</Link>
-          </div>
-        </form>
-      </div>
-    </>
+        </div>
+      </main>
+    </div>
   )
 }
