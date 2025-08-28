@@ -53,7 +53,7 @@ export default function Signup() {
       <Header />
       
       <main className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="card">
+        <div className="card border rounded-lg mt-10 bg-secondary shadow">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-2xl">K</span>

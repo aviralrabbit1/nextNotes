@@ -5,9 +5,14 @@ Notes App with nextjs and django
 
 - In one terminal, run:
 ```sh
+py -m venv venv
 venv/Scripts/activate
 cd backend
-py manage.y runserver
+pip install -r requirements.txt
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+py manage.py runserver
 ```
 
 - In second terminal, run (You can use `npm install` and `npm run dev` as well).

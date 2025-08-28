@@ -1,17 +1,18 @@
 @import 'tailwindcss';
-@import '../tailwind.config';
+/* @import '../tailwind.config'; */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --color-primary: #6366f1;
-  --color-secondary: #4f46e5;
-  --color-accent: #10b981;
-  --color-background: #f8fafc;
-  --color-text: #1e293b;
-  --color-card: #ffffff;
+  --bg-white: #fff;
+  --bg-primary: #f5f0de;
+  --bg-secondary: #a1cdd2;
+  --color-primary: #5d4c3e;
+  --color-header: #2f6c79;
   --color-border: #be4414;
+  --bg-form: #f2d1b4;
+  --bg-accent: #48dd7f;
 }
 
 .dark {
@@ -22,6 +23,12 @@
   --color-text: #f1f5f9;
   --color-card: #1e293b;
   --color-border: #334155;
+}
+
+h1, h2, h3 {
+  color: var(--color-header);
+  /* margin-bottom: 1rem; */
+  font-weight: 600;
 }
 
 * {
@@ -40,6 +47,45 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.logo {  
+  color: var(--color-header);
+  font-weight: 700;
+}
+
+@layer base {
+    body {
+        @apply bg-primary text-primary font-sans;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        @apply text-header font-bold;
+    }
+    h1 {
+        @apply text-3xl md:text-4xl mb-4;
+    }
+    h2 {
+        @apply text-2xl md:text-3xl mb-3;
+    }
+    h3 {
+        @apply text-xl md:text-2xl mb-2;
+    }
+    a {
+        @apply text-header hover:text-border transition-colors duration-200;
+    }
+    input, textarea, select {
+        @apply bg-form border border-primary rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent;
+    }
+    button, .btn {
+        @apply bg-secondary text-white font-medium py-2 px-4 rounded hover:bg-header transition-colors duration-200;
+    }
+    .btn-accent {
+        @apply bg-accent hover:bg-header text-white;
+    }
+    .btn-border {
+        @apply border-2 border-primary text-primary bg-transparent hover:bg-primary;
+    }
+}
+
+
 @layer components {
   .btn-primary {
     @apply bg-primary hover:bg-secondary text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
@@ -55,5 +101,38 @@ body {
   
   .card {
     @apply bg-card border border-border rounded-xl shadow-sm p-6;
+  }           
+  .card {
+      @apply bg-white rounded-lg shadow-md p-6 border-l-4 border-primary;
+  }
+  .card-header {
+      @apply border-b border-secondary pb-2 mb-4;
+  }
+  .form-group {
+      @apply mb-4;
+  }
+  .form-label {
+      @apply block text-header font-medium mb-1;
+  }
+  .nav-link {
+      @apply inline-block py-2 px-4 text-header hover:text-border font-medium;
+  }
+  .alert {
+      @apply p-4 rounded-lg mb-4;
+  }
+  .alert-success {
+      @apply bg-accent text-white;
+  }
+  .alert-warning {
+      @apply bg-form text-primary;
+  }
+  .badge {
+      @apply inline-block px-2 py-1 text-xs font-medium rounded-full;
+  }
+  .badge-accent {
+      @apply bg-accent text-white;
+  }
+  .badge-secondary {
+      @apply bg-secondary text-white;
   }
 }
