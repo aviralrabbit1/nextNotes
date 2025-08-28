@@ -1,6 +1,29 @@
 # nextNotes
 Notes App with nextjs and django
 
+## How to run it(windows)
+
+- In one terminal, run:
+```sh
+py -m venv venv
+venv/Scripts/activate
+cd backend
+pip install -r requirements.txt
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+py manage.py runserver
+```
+
+- In second terminal, run (You can use `npm install` and `npm run dev` as well).
+```sh
+cd frontend
+bun install
+bun run dev
+```
+
+- Picked colors from [Color picker](https://imagecolorpicker.com/)
+
 ## 1. Setup
 
 <details>

@@ -1,171 +1,138 @@
+@import 'tailwindcss';
+/* @import '../tailwind.config'; */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg-primary: #8B9A8F;
-  --bg-secondary: #A8B5A3;
-  --bg-card: #D4D4AA;
-  --bg-note: #F4E7D1;
-  --text-primary: #2D3748;
-  --text-secondary: #4A5568;
-  --border-color: #E2E8F0;
-  --accent-green: #38A169;
-  --accent-red: #E53E3E;
+  --bg-white: #fff;
+  --bg-primary: #f5f0de;
+  --bg-secondary: #a1cdd2;
+  --color-primary: #5d4c3e;
+  --color-header: #2f6c79;
+  --color-border: #be4414;
+  --bg-form: #f2d1b4;
+  --bg-accent: #48dd7f;
+}
+
+.dark {
+  --color-primary: #818cf8;
+  --color-secondary: #6366f1;
+  --color-accent: #34d399;
+  --color-background: #0f172a;
+  --color-text: #f1f5f9;
+  --color-card: #1e293b;
+  --color-border: #334155;
+}
+
+h1, h2, h3 {
+  color: var(--color-header);
+  /* margin-bottom: 1rem; */
+  font-weight: 600;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.note-card {
-  background-color: var(--bg-note);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-  cursor: pointer;
-  position: relative;
-}
-
-.note-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.note-title {
-  font-weight: 600;
-  font-size: 1.1rem;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-
-.note-content {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  margin-bottom: 8px;
-}
-
-.note-date {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  text-align: right;
-}
-
-.delete-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: var(--accent-red);
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.delete-btn:hover {
-  background-color: #C53030;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: var(--bg-note);
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-}
-
-.modal-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: var(--text-primary);
-}
-
-.modal-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  margin-bottom: 12px;
-  font-size: 1rem;
-  background-color: white;
-}
-
-.modal-textarea {
-  width: 100%;
-  height: 200px;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  margin-bottom: 16px;
-  font-size: 1rem;
-  resize: vertical;
-  background-color: white;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background-color: var(--accent-green);
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-right: 8px;
-  font-weight: 500;
-}
-
-.btn-primary:hover {
-  background-color: #2F855A;
-}
-
-.btn-secondary {
-  background-color: var(--accent-red);
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.btn-secondary:hover {
-  background-color: #C53030;
-}
-
-.header {
-  background-color: var(--bg-secondary);
-  padding: 16px 0;
-  margin-bottom: 32px;
-}
-
-.greeting {
-  font-size: 2rem;
+.logo {  
+  color: var(--color-header);
   font-weight: 700;
-  margin-bottom: 32px;
-  color: var(--text-primary);
+}
+
+@layer base {
+    body {
+        @apply bg-primary text-primary font-sans;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        @apply text-header font-bold;
+    }
+    h1 {
+        @apply text-3xl md:text-4xl mb-4;
+    }
+    h2 {
+        @apply text-2xl md:text-3xl mb-3;
+    }
+    h3 {
+        @apply text-xl md:text-2xl mb-2;
+    }
+    a {
+        @apply text-header hover:text-border transition-colors duration-200;
+    }
+    input, textarea, select {
+        @apply bg-form border border-primary rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent;
+    }
+    button, .btn {
+        @apply bg-secondary text-white font-medium py-2 px-4 rounded hover:bg-header transition-colors duration-200;
+    }
+    .btn-accent {
+        @apply bg-accent hover:bg-header text-white;
+    }
+    .btn-border {
+        @apply border-2 border-primary text-primary bg-transparent hover:bg-primary;
+    }
+}
+
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary hover:bg-secondary text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border border-primary text-primary hover:bg-primary hover:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-card border border-border rounded-xl shadow-sm p-6;
+  }           
+  .card {
+      @apply bg-white rounded-lg shadow-md p-6 border-l-4 border-primary;
+  }
+  .card-header {
+      @apply border-b border-secondary pb-2 mb-4;
+  }
+  .form-group {
+      @apply mb-4;
+  }
+  .form-label {
+      @apply block text-header font-medium mb-1;
+  }
+  .nav-link {
+      @apply inline-block py-2 px-4 text-header hover:text-border font-medium;
+  }
+  .alert {
+      @apply p-4 rounded-lg mb-4;
+  }
+  .alert-success {
+      @apply bg-accent text-white;
+  }
+  .alert-warning {
+      @apply bg-form text-primary;
+  }
+  .badge {
+      @apply inline-block px-2 py-1 text-xs font-medium rounded-full;
+  }
+  .badge-accent {
+      @apply bg-accent text-white;
+  }
+  .badge-secondary {
+      @apply bg-secondary text-white;
+  }
 }

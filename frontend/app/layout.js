@@ -4,22 +4,19 @@ import './globals.css'
 import { Provider } from 'react-redux'
 import { store } from './store/index' 
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children,
+  title = 'Next Notes',
+  description = 'A modern Note taking application',
+  keywords = 'notes, todo, list, tasks, note taking',
+ }) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+      </head>
       <body>
-        <Provider store={store}>  
-          {/* <div className="header">
-            <div className="max-w-6xl mx-auto px-6">
-              <div className="flex justify-between items-center">
-                <h1 className="text-xl font-semibold text-gray-800">Keep Notes</h1>
-                <div className="space-x-4">
-                  <span className="text-gray-600">About</span>
-                  <span className="text-gray-600">Notes</span>
-                </div>
-              </div>
-            </div>
-          </div> */}
+        <Provider store={store}>
           {children}
         </Provider>
       </body>

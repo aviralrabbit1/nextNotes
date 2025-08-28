@@ -1,104 +1,112 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { useDispatch } from 'react-redux'
 import Link from 'next/link'
-import { loginUser, clearError } from '../store/authSlice'
-import { useAuth } from '../hooks/useAuth'
+import { loginUser, clearError } from '../store/slices/authSlice'
 import Header from '../components/Header'
+import Cookies from 'js-cookie'
 
-export default function LoginPage() {
+export default function Login() {
   const [formData, setFormData] = useState({
-    email: '',
+    user_email: '',
     password: '',
   })
-
+  
   const dispatch = useDispatch()
   const router = useRouter()
-  const { isAuthenticated, loading, error } = useAuth()
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/')
-    }
-  }, [isAuthenticated, router])
-
-  useEffect(() => {
-    dispatch(clearError())
-  }, [dispatch])
+  const { isLoading, error } = useSelector((state) => state.auth)
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+    if (error) dispatch(clearError())
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     const result = await dispatch(loginUser(formData))
-    if (result.type === 'auth/login/fulfilled') {
-      router.push('/')
+    
+    if (!result.error) {
+      // Store tokens in cookies
+      Cookies.set('access_token', result.payload.access)
+      Cookies.set('refresh_token', result.payload.refresh)
+      router.push('/notes')
     }
   }
 
-  if (isAuthenticated) {
-    return <div className="loading">Redirecting...</div>
-  }
-
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="auth-container">
-        <form onSubmit={handleSubmit} className="auth-form">
-          <h2 className="auth-title">Login</h2>
-          
+      
+      <main className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="card">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
+              <span className="text-white font-bold text-2xl">K</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+            <p className="text-gray-600">Sign in to your account to continue</p>
+          </div>
+
           {error && (
-            <div className="error-message">
-              {error.email?.[0] || error.password?.[0] || error.non_field_errors?.[0] || error.message || 'Login failed'}
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {typeof error === 'object' ? error.error || 'Login failed' : error}
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
-          </div>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="user_email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                id="user_email"
+                name="user_email"
+                className="input-field"
+                placeholder="Enter your email"
+                value={formData.user_email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
-          </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="input-field"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn btn-primary"
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full btn-primary py-3 disabled:opacity-50"
+            >
+              {isLoading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
 
-          <div className="auth-link">
-            Don't have an account? <Link href="/signup">Sign up</Link>
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Don't have an account?{' '}
+              <Link href="/signup" className="text-primary hover:text-secondary font-medium">
+                Sign up
+              </Link>
+            </p>
           </div>
-        </form>
-      </div>
-    </>
+        </div>
+      </main>
+    </div>
   )
 }
